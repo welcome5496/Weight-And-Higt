@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>बच्चों का वजन और ऊँचाई चार्ट</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: url('https://images.unsplash.com/photo-1609850000885-b98df5fc329f?auto=format&fit=crop&w=1600&q=80') no-repeat center center fixed;
+      background-size: cover;
+      color: #2c3e50;
+      text-align: center;
+    }
+    .container {
+      padding: 40px;
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: #ffffff;
+      text-shadow: 1px 1px 5px rgba(0,0,0,0.8);
+    }
+    select, button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 10px;
+      border-radius: 8px;
+      border: none;
+    }
+    button {
+      background: #3498db;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #2980b9;
+    }
+    .result {
+      background: rgba(255,255,255,0.95);
+      margin: 20px auto;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 400px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+    label {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>बच्चों की ऊँचाई और वजन चार्ट (0-6 वर्ष)</h1>
+
+    <div>
+      <label>लिंग:</label>
+      <select id="gender">
+        <option value="boy">लड़का</option>
+        <option value="girl">लड़की</option>
+      </select>
+      <label>वर्ष:</label>
+      <select id="years">
+        <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+        <option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option>
+      </select>
+      <label>महीने:</label>
+      <select id="months">
+        ${[...Array(12)].map((_, i) => `<option value="${i}">${i}</option>`).join('')}
+      </select>
+      <label>दिन:</label>
+      <select id="days">
+        <option value="0">0</option><option value="15">15</option>
+      </select>
+    </div>
+
+    <button onclick="getInfo()">जानकारी दिखाएं</button>
+    <button onclick="printInfo()">प्रिंट करें</button>
+    <button onclick="saveInfo()">सेव करें</button>
+
+    <div id="result" class="result" style="display: none;"></div>
+  </div>
+
+  <script>
+    const data = {
+      0: { boy: { weight: "2.5 - 4.3 kg", height: "46 - 54 cm" }, girl: { weight: "2.4 - 4.2 kg", height: "45 - 53 cm" } },
+      6: { boy: { weight: "6.4 - 9.7 kg", height: "63 - 70 cm" }, girl: { weight: "5.8 - 9.2 kg", height: "61 - 68 cm" } },
+      12: { boy: { weight: "8.6 - 12.0 kg", height: "71 - 80 cm" }, girl: { weight: "7.9 - 11.5 kg", height: "70 - 78 cm" } },
+      24: { boy: { weight: "10.1 - 14.5 kg", height: "82 - 92 cm" }, girl: { weight: "9.6 - 13.9 kg", height: "80 - 90 cm" } },
+      36: { boy: { weight: "11.5 - 17.2 kg", height: "90 - 100 cm" }, girl: { weight: "11.0 - 16.8 kg", height: "88 - 98 cm" } },
+      48: { boy: { weight: "13.0 - 19.9 kg", height: "96 - 106 cm" }, girl: { weight: "12.2 - 19.6 kg", height: "94 - 104 cm" } },
+      60: { boy: { weight: "14.4 - 22.4 kg", height: "102 - 113 cm" }, girl: { weight: "13.4 - 22.0 kg", height: "100 - 111 cm" } },
+      72: { boy: { weight: "16.0 - 25.0 kg", height: "108 - 118 cm" }, girl: { weight: "15.0 - 24.5 kg", height: "105 - 116 cm" } }
+    };
+
+    let spokenText = "";
+
+    function getInfo() {
+      const gender = document.getElementById("gender").value;
+      const years = parseInt(document.getElementById("years").value);
+      const months = parseInt(document.getElementById("months").value);
+      const days = parseInt(document.getElementById("days").value);
+
+      const totalMonths = years * 12 + months + (days >= 15 ? 1 : 0);
+      const closestAge = findClosestAge(totalMonths);
+
+      const info = data[closestAge];
+      const result = document.getElementById("result");
+
+      if (info && info[gender]) {
+        const text = `
+          आयु: ${years} वर्ष, ${months} महीने, ${days} दिन<br>
+          ${gender === 'boy' ? 'लड़के' : 'लड़की'} का वजन: ${info[gender].weight}<br>
+          ${gender === 'boy' ? 'लड़के' : 'लड़की'} की ऊँचाई: ${info[gender].height}
+        `;
+        spokenText = text.replace(/<br>/g, " ");
+        result.innerHTML = text;
+        result.style.display = "block";
+        speakHindi(spokenText);
+      } else {
+        result.innerHTML = "जानकारी उपलब्ध नहीं है।";
+        result.style.display = "block";
+      }
+    }
+
+    function findClosestAge(months) {
+      const available = Object.keys(data).map(x => parseInt(x));
+      return available.reduce((prev, curr) =>
+        Math.abs(curr - months) < Math.abs(prev - months) ? curr : prev
+      );
+    }
+
+    function speakHindi(text) {
+      const msg = new SpeechSynthesisUtterance();
+      msg.lang = "hi-IN";
+      msg.text = text;
+      window.speechSynthesis.speak(msg);
+    }
+
+    function printInfo() {
+      const content = document.getElementById("result").innerHTML;
+      const printWindow = window.open('', '', 'height=500,width=400');
+      printWindow.document.write('<html><head><title>प्रिंट जानकारी</title></head><body>');
+      printWindow.document.write('<h2>बच्चे की जानकारी</h2>');
+      printWindow.document.write(content);
+      printWindow.document.write('</body></html>');
+      printWindow.document.close();
+      printWindow.print();
+    }
+
+    function saveInfo() {
+      const blob = new Blob([spokenText], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = "बच्चे_की_जानकारी.txt";
+      a.click();
+    }
+  </script>
+
+</body>
+</html>
+
