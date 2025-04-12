@@ -63,16 +63,11 @@
       </select>
       <label>वर्ष:</label>
       <select id="years">
-        <option value="0">0</option><option value="1">1</option><option value="2">2</option>
-        <option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option>
+        ${[...Array(7)].map((_, i) => `<option value="${i}">${i}</option>`).join('')}
       </select>
       <label>महीने:</label>
       <select id="months">
         ${[...Array(12)].map((_, i) => `<option value="${i}">${i}</option>`).join('')}
-      </select>
-      <label>दिन:</label>
-      <select id="days">
-        <option value="0">0</option><option value="15">15</option>
       </select>
     </div>
 
@@ -101,9 +96,8 @@
       const gender = document.getElementById("gender").value;
       const years = parseInt(document.getElementById("years").value);
       const months = parseInt(document.getElementById("months").value);
-      const days = parseInt(document.getElementById("days").value);
+      const totalMonths = years * 12 + months;
 
-      const totalMonths = years * 12 + months + (days >= 15 ? 1 : 0);
       const closestAge = findClosestAge(totalMonths);
 
       const info = data[closestAge];
@@ -111,7 +105,7 @@
 
       if (info && info[gender]) {
         const text = `
-          आयु: ${years} वर्ष, ${months} महीने, ${days} दिन<br>
+          आयु: ${years} वर्ष, ${months} महीने<br>
           ${gender === 'boy' ? 'लड़के' : 'लड़की'} का वजन: ${info[gender].weight}<br>
           ${gender === 'boy' ? 'लड़के' : 'लड़की'} की ऊँचाई: ${info[gender].height}
         `;
@@ -161,4 +155,3 @@
 
 </body>
 </html>
-
