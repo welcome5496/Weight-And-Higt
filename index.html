@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>बच्चों का वजन और ऊँचाई चार्ट</title>
   <style>
     body {
@@ -15,19 +15,23 @@
       text-align: center;
     }
     .container {
-      padding: 40px;
+      padding: 30px 20px;
+      max-width: 600px;
+      margin: auto;
     }
     h1 {
       margin-bottom: 20px;
-      color: #ffffff;
+      color: #fff;
       text-shadow: 1px 1px 5px rgba(0,0,0,0.8);
     }
     select, button {
-      padding: 10px;
+      padding: 12px;
       font-size: 16px;
-      margin: 10px;
+      margin: 10px 5px;
       border-radius: 8px;
       border: none;
+      width: 100%;
+      max-width: 250px;
     }
     button {
       background: #3498db;
@@ -42,11 +46,18 @@
       margin: 20px auto;
       padding: 20px;
       border-radius: 12px;
-      max-width: 400px;
       box-shadow: 0 0 10px rgba(0,0,0,0.3);
     }
     label {
       font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+    @media screen and (max-width: 480px) {
+      select, button {
+        font-size: 15px;
+        padding: 10px;
+      }
     }
   </style>
 </head>
@@ -55,23 +66,42 @@
   <div class="container">
     <h1>बच्चों की ऊँचाई और वजन चार्ट (0-6 वर्ष)</h1>
 
-    <div>
-      <label>लिंग:</label>
-      <select id="gender">
-        <option value="boy">लड़का</option>
-        <option value="girl">लड़की</option>
-      </select>
-      <label>वर्ष:</label>
-      <select id="years">
-        ${[...Array(7)].map((_, i) => `<option value="${i}">${i}</option>`).join('')}
-      </select>
-      <label>महीने:</label>
-      <select id="months">
-        ${[...Array(12)].map((_, i) => `<option value="${i}">${i}</option>`).join('')}
-      </select>
-    </div>
+    <label>लिंग:</label>
+    <select id="gender">
+      <option value="boy">लड़का</option>
+      <option value="girl">लड़की</option>
+    </select>
 
+    <label>वर्ष:</label>
+    <select id="years">
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+    </select>
+
+    <label>महीने:</label>
+    <select id="months">
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+      <option value="9">9</option>
+      <option value="10">10</option>
+      <option value="11">11</option>
+    </select>
+
+    <br><br>
     <button onclick="getInfo()">जानकारी दिखाएं</button>
+    <button onclick="startVoice()">🎤 बोलें</button>
     <button onclick="printInfo()">प्रिंट करें</button>
     <button onclick="saveInfo()">सेव करें</button>
 
@@ -99,7 +129,6 @@
       const totalMonths = years * 12 + months;
 
       const closestAge = findClosestAge(totalMonths);
-
       const info = data[closestAge];
       const result = document.getElementById("result");
 
@@ -150,6 +179,35 @@
       a.href = URL.createObjectURL(blob);
       a.download = "बच्चे_की_जानकारी.txt";
       a.click();
+    }
+
+    function startVoice() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = "hi-IN";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      recognition.start();
+
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        parseVoiceInput(transcript);
+      };
+
+      recognition.onerror = function(event) {
+        alert("वॉयस इनपुट में त्रुटि: " + event.error);
+      };
+    }
+
+    function parseVoiceInput(text) {
+      let gender = text.includes("लड़का") ? "boy" : text.includes("लड़की") ? "girl" : "boy";
+      let years = (text.match(/(\d+) ?(साल|वर्ष)/) || [])[1] || 0;
+      let months = (text.match(/(\d+) ?(महीना|महीने)/) || [])[1] || 0;
+
+      document.getElementById("gender").value = gender;
+      document.getElementById("years").value = years;
+      document.getElementById("months").value = months;
+
+      getInfo();
     }
   </script>
 
